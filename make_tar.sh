@@ -7,6 +7,7 @@ tar -zcvf HQmdstem.tar.gz \
     --exclude='__pycache__' \
     --exclude='*.pyc' \
     --exclude='HQmdstem.tar.gz' \
+    --exclude='.git' \
     .
 echo ""
 echo "Done: $(pwd)/HQmdstem.tar.gz"
