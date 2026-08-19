@@ -1,0 +1,121 @@
+units         metal
+boundary      p p p
+atom_style    atomic
+
+read_data     lammps.data
+
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+# 保存初始 restart
+write_restart initial.restart
+
+# 参考应力
+compute    S0 all pressure NULL virial
+variable   sxx0 equal c_S0[1]
+variable   syy0 equal c_S0[2]
+variable   szz0 equal c_S0[3]
+variable   sxy0 equal c_S0[4]
+variable   sxz0 equal c_S0[5]
+variable   syz0 equal c_S0[6]
+
+variable   lx0 equal xhi-xlo
+variable   ly0 equal yhi-ylo
+variable   lz0 equal zhi-zlo
+
+variable   delta  equal 1.0e-5
+variable   conv   equal -0.0001
+
+# ==================== eps_xx = delta ====================
+variable lx1 equal ${lx0}*(1+${delta})
+change_box  all x final 0 ${lx1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S1 all pressure NULL virial
+variable C11 equal -(c_S1[1]-${sxx0})/${delta}*${conv}
+variable C21 equal -(c_S1[2]-${syy0})/${delta}*${conv}
+variable C31 equal -(c_S1[3]-${szz0})/${delta}*${conv}
+read_restart initial.restart
+
+# ==================== eps_yy = delta ====================
+variable ly1 equal ${ly0}*(1+${delta})
+change_box  all y final 0 ${ly1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S2 all pressure NULL virial
+variable C22 equal -(c_S2[2]-${syy0})/${delta}*${conv}
+variable C12 equal -(c_S2[1]-${sxx0})/${delta}*${conv}
+variable C32 equal -(c_S2[3]-${szz0})/${delta}*${conv}
+read_restart initial.restart
+
+# ==================== eps_zz = delta ====================
+variable lz1 equal ${lz0}*(1+${delta})
+change_box  all z final 0 ${lz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S3 all pressure NULL virial
+variable C33 equal -(c_S3[3]-${szz0})/${delta}*${conv}
+variable C13 equal -(c_S3[1]-${sxx0})/${delta}*${conv}
+variable C23 equal -(c_S3[2]-${syy0})/${delta}*${conv}
+read_restart initial.restart
+
+# ==================== eps_yz = 2*delta ====================
+variable yz1 equal ${ly0}*(2*${delta})
+change_box  all yz final 0 ${yz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S4 all pressure NULL virial
+variable C44 equal -(c_S4[4]-${syz0})/(2*${delta})*${conv}
+read_restart initial.restart
+
+# ==================== eps_xz = 2*delta ====================
+variable xz1 equal ${lx0}*(2*${delta})
+change_box  all xz final 0 ${xz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S5 all pressure NULL virial
+variable C55 equal -(c_S5[5]-${sxz0})/(2*${delta})*${conv}
+read_restart initial.restart
+
+# ==================== eps_xy = 2*delta ====================
+variable xy1 equal ${lx0}*(2*${delta})
+change_box  all xy final 0 ${xy1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute  S6 all pressure NULL virial
+variable C66 equal -(c_S6[4]-${sxy0})/(2*${delta})*${conv}
+read_restart initial.restart
+
+# 对称化
+variable C12s equal (${C12}+${C21})/2
+variable C13s equal (${C13}+${C31})/2
+variable C23s equal (${C23}+${C32})/2
+
+# ==================== 输出 ====================
+print "=== ELASTIC CONSTANTS (GPa) ===" file elastic.out
+print "  C11 = ${C11}"              append file elastic.out
+print "  C22 = ${C22}"              append file elastic.out
+print "  C33 = ${C33}"              append file elastic.out
+print "  C12 = ${C12s}"             append file elastic.out
+print "  C13 = ${C13s}"             append file elastic.out
+print "  C23 = ${C23s}"             append file elastic.out
+print "  C44 = ${C44}"              append file elastic.out
+print "  C55 = ${C55}"              append file elastic.out
+print "  C66 = ${C66}"              append file elastic.out
+print " "                           append file elastic.out
+print "=== 6x6 Matrix (Voigt, GPa) ===" append file elastic.out
+print "${C11} ${C12s} ${C13s} 0.0 0.0 0.0"      append file elastic.out
+print "${C12s} ${C22} ${C23s} 0.0 0.0 0.0"      append file elastic.out
+print "${C13s} ${C23s} ${C33} 0.0 0.0 0.0"      append file elastic.out
+print "0.0 0.0 0.0 ${C44} 0.0 0.0"              append file elastic.out
+print "0.0 0.0 0.0 0.0 ${C55} 0.0"              append file elastic.out
+print "0.0 0.0 0.0 0.0 0.0 ${C66}"              append file elastic.out
+
+print "=== ELASTIC CONSTANTS (GPa) ==="
+print "  C11 = ${C11}"
+print "  C22 = ${C22}"
+print "  C33 = ${C33}"
+print "  C12 = ${C12s}"
+print "  C13 = ${C13s}"
+print "  C23 = ${C23s}"
+print "  C44 = ${C44}"
+print "  C55 = ${C55}"
+print "  C66 = ${C66}"
+print "  [written to elastic.out]"

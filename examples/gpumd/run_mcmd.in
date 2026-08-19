@@ -1,0 +1,383 @@
+potential nep.txt
+velocity 20
+time_step 1
+
+# === T = 20 K ===
+# Relax at NPT
+ensemble npt_mttk temp 20 20 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 20 20 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 20
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 20 20 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 40 K ===
+# Relax at NPT
+ensemble npt_mttk temp 40 40 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 40 40 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 40
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 40 40 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 60 K ===
+# Relax at NPT
+ensemble npt_mttk temp 60 60 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 60 60 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 60
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 60 60 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 80 K ===
+# Relax at NPT
+ensemble npt_mttk temp 80 80 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 80 80 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 80
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 80 80 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 100 K ===
+# Relax at NPT
+ensemble npt_mttk temp 100 100 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 100 100 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 100
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 100 100 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 120 K ===
+# Relax at NPT
+ensemble npt_mttk temp 120 120 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 120 120 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 120
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 120 120 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 140 K ===
+# Relax at NPT
+ensemble npt_mttk temp 140 140 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 140 140 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 140
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 140 140 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 160 K ===
+# Relax at NPT
+ensemble npt_mttk temp 160 160 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 160 160 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 160
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 160 160 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 180 K ===
+# Relax at NPT
+ensemble npt_mttk temp 180 180 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 180 180 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 180
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 180 180 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 200 K ===
+# Relax at NPT
+ensemble npt_mttk temp 200 200 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 200 200 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 200
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 200 200 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 220 K ===
+# Relax at NPT
+ensemble npt_mttk temp 220 220 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 220 220 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 220
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 220 220 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 240 K ===
+# Relax at NPT
+ensemble npt_mttk temp 240 240 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 240 240 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 240
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 240 240 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 260 K ===
+# Relax at NPT
+ensemble npt_mttk temp 260 260 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 260 260 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 260
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 260 260 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 280 K ===
+# Relax at NPT
+ensemble npt_mttk temp 280 280 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 280 280 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 280
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 280 280 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 300 K ===
+# Relax at NPT
+ensemble npt_mttk temp 300 300 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 300 300 aniso 1e-4 1e-4
+mc canonical 1000 1000 300 300
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 300 300 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 320 K ===
+# Relax at NPT
+ensemble npt_mttk temp 320 320 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 320 320 aniso 1e-4 1e-4
+mc canonical 1000 1000 320 320
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 320 320 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 340 K ===
+# Relax at NPT
+ensemble npt_mttk temp 340 340 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 340 340 aniso 1e-4 1e-4
+mc canonical 1000 1000 340 340
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 340 340 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 360 K ===
+# Relax at NPT
+ensemble npt_mttk temp 360 360 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 360 360 aniso 1e-4 1e-4
+mc canonical 1000 1000 360 360
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 360 360 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 380 K ===
+# Relax at NPT
+ensemble npt_mttk temp 380 380 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 380 380 aniso 1e-4 1e-4
+mc canonical 1000 1000 380 380
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 380 380 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000
+
+# === T = 400 K ===
+# Relax at NPT
+ensemble npt_mttk temp 400 400 aniso 1e-4 1e-4
+dump_thermo 1000
+run 10000
+
+# Sampling with canonical MC
+ensemble npt_mttk temp 400 400 aniso 1e-4 1e-4
+mc canonical 1000 1000 400 400
+dump_thermo 1000
+dump_exyz 10000
+run 20000
+
+# Relax at NPT
+ensemble npt_mttk temp 400 400 aniso 1e-4 1e-4
+dump_thermo 1000
+dump_exyz 10000
+run 10000

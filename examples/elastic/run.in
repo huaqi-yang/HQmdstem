@@ -1,0 +1,23 @@
+potential   ./nep.txt
+minimize fire 0.01 1000
+ensemble nve
+time_step 0
+dump_xyz -1 0 1 relaxed.xyz
+run 1
+
+compute_msd 5 200 all_groups 1 save_every 100000
+compute_dos 5 200 400.0
+compute_rdf 5.0 100 300
+compute_angular_rdf 5.0 200 100 1000
+compute_cohesive 0.9 1.2 0
+compute_elastic 0.01
+compute_shc 2 250 0 1000 400.0
+compute_hnemd 1000 0.00001 0 0
+
+velocity    300
+time_step   1
+ensemble    npt_scr 300 300 100 0 0 0 0 0 0 100 100 100 100 100 100 50
+dump_thermo  100    
+dump_position 1000
+dump_xyz -1 1 100000 100K.restart.xyz velocity
+run       1100000

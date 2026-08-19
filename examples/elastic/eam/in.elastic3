@@ -1,0 +1,190 @@
+# in.elastic_fd — clear 复位版（兼容所有 LAMMPS 版本）
+# 策略：每个应变计算前用 clear 彻底清空，重新初始化
+
+# ====== 脚本控制变量 ======
+variable   delta  equal 1.0e-5
+variable   conv   equal -0.0001
+
+# ====== Pass 0: 保存初始 box 尺寸 ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+variable   lx0 equal xhi-xlo
+variable   ly0 equal yhi-ylo
+variable   lz0 equal zhi-zlo
+shell       echo "lx0=${lx0} ly0=${ly0} lz0=${lz0}" > box_dims.txt
+print       "Box: ${lx0} ${ly0} ${lz0}"
+
+clear
+
+# ====== Pass 1: eps_xx ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+variable   lx0 equal xhi-xlo
+variable   ly0 equal yhi-ylo
+compute    S0 all pressure NULL virial
+variable   s1 equal c_S0[1]
+variable   s2 equal c_S0[2]
+variable   s3 equal c_S0[3]
+variable   s4 equal c_S0[4]
+variable   s5 equal c_S0[5]
+variable   s6 equal c_S0[6]
+
+variable   lx1 equal ${lx0}*(1+${delta})
+change_box  all x final 0 ${lx1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S1 all pressure NULL virial
+variable   C11 equal -(c_S1[1]-${s1})/${delta}*${conv}
+variable   C21 equal -(c_S1[2]-${s2})/${delta}*${conv}
+variable   C31 equal -(c_S1[3]-${s3})/${delta}*${conv}
+
+print "C11=${C11} C21=${C21} C31=${C31}" append elastic.out
+
+clear
+
+# ====== Pass 2: eps_yy ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+variable   s1 equal c_S0[1]
+variable   s2 equal c_S0[2]
+variable   s3 equal c_S0[3]
+
+variable   ly1 equal ${ly0}*(1+${delta})
+change_box  all y final 0 ${ly1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S2 all pressure NULL virial
+variable   C22 equal -(c_S2[2]-${s2})/${delta}*${conv}
+variable   C12 equal -(c_S2[1]-${s1})/${delta}*${conv}
+variable   C32 equal -(c_S2[3]-${s3})/${delta}*${conv}
+
+print "C22=${C22} C12=${C12} C32=${C32}" append elastic.out
+
+clear
+
+# ====== Pass 3: eps_zz ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+variable   s1 equal c_S0[1]
+variable   s2 equal c_S0[2]
+variable   s3 equal c_S0[3]
+
+variable   lz1 equal ${lz0}*(1+${delta})
+change_box  all z final 0 ${lz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S3 all pressure NULL virial
+variable   C33 equal -(c_S3[3]-${s3})/${delta}*${conv}
+variable   C13 equal -(c_S3[1]-${s1})/${delta}*${conv}
+variable   C23 equal -(c_S3[2]-${s2})/${delta}*${conv}
+
+print "C33=${C33} C13=${C13} C23=${C23}" append elastic.out
+
+clear
+
+# ====== Pass 4: eps_yz ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+variable   s6 equal c_S0[6]
+
+variable   yz1 equal ${ly0}*(2*${delta})
+change_box  all yz final 0 ${yz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S4 all pressure NULL virial
+variable   C44 equal -(c_S4[4]-${s6})/(2*${delta})*${conv}
+
+print "C44=${C44}" append elastic.out
+
+clear
+
+# ====== Pass 5: eps_xz ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+variable   s5 equal c_S0[5]
+
+variable   xz1 equal ${lx0}*(2*${delta})
+change_box  all xz final 0 ${xz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S5 all pressure NULL virial
+variable   C55 equal -(c_S5[5]-${s5})/(2*${delta})*${conv}
+
+print "C55=${C55}" append elastic.out
+
+clear
+
+# ====== Pass 6: eps_xy ======
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+variable   s4 equal c_S0[4]
+
+variable   xy1 equal ${lx0}*(2*${delta})
+change_box  all xy final 0 ${xy1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S6 all pressure NULL virial
+variable   C66 equal -(c_S6[4]-${s4})/(2*${delta})*${conv}
+
+print "C66=${C66}" append elastic.out
+
+clear
+
+# ====== 读取结果并输出矩阵 ======
+# 手动从 elastic.out 提取 Cij 值，或直接用 shell 拼接
+shell echo " " >> elastic.out
+shell echo "=== 6x6 Matrix (Voigt, GPa) ===" >> elastic.out
+shell echo "C11 C12 C13  0   0   0"  >> elastic.out
+shell echo "C12 C22 C23  0   0   0"  >> elastic.out
+shell echo "C13 C23 C33  0   0   0"  >> elastic.out
+shell echo " 0   0   0  C44  0   0"  >> elastic.out
+shell echo " 0   0   0   0  C55  0"  >> elastic.out
+shell echo " 0   0   0   0   0  C66" >> elastic.out

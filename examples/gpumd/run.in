@@ -1,0 +1,16 @@
+potential   ./nep_gen159000.txt
+minimize fire 0.01 1000
+ensemble nve
+time_step 0
+dump_xyz -1 0 1 relaxed.xyz
+run 1
+velocity 50 
+time_step 1
+ensemble    npt_mttk temp 50 650 aniso 0 0
+
+dump_thermo  100    
+dump_position 1000
+dump_xyz -1 1 100000 50K.restart.xyz velocity 
+dump_exyz 100
+
+run       2000000

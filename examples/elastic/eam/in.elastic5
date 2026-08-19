@@ -1,0 +1,185 @@
+# in.elastic_fd — 用 fix deform 施加剪切（兼容所有旧 LAMMPS）
+variable   delta  equal 1.0e-5
+variable   conv   equal -0.0001
+variable   d2     equal 2.0e-5    # 2*delta, 用于剪切应变率
+
+# ================================================================
+# Pass 1: eps_xx
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   sxx equal c_S0[1]
+variable   syy equal c_S0[2]
+variable   szz equal c_S0[3]
+
+variable   lx0 equal xhi-xlo
+variable   lx1 equal ${lx0}*(1+${delta})
+change_box  all x final 0 ${lx1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S1 all pressure NULL virial
+run        0
+variable   C11 equal -(c_S1[1]-${sxx})/${delta}*${conv}
+variable   C21 equal -(c_S1[2]-${syy})/${delta}*${conv}
+variable   C31 equal -(c_S1[3]-${szz})/${delta}*${conv}
+print "C11=${C11}  C21=${C21}  C31=${C31}" append elastic.out
+clear
+
+# ================================================================
+# Pass 2: eps_yy
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   sxx equal c_S0[1]
+variable   syy equal c_S0[2]
+variable   szz equal c_S0[3]
+
+variable   ly0 equal yhi-ylo
+variable   ly1 equal ${ly0}*(1+${delta})
+change_box  all y final 0 ${ly1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S2 all pressure NULL virial
+run        0
+variable   C22 equal -(c_S2[2]-${syy})/${delta}*${conv}
+variable   C12 equal -(c_S2[1]-${sxx})/${delta}*${conv}
+variable   C32 equal -(c_S2[3]-${szz})/${delta}*${conv}
+print "C22=${C22}  C12=${C12}  C32=${C32}" append elastic.out
+clear
+
+# ================================================================
+# Pass 3: eps_zz
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   sxx equal c_S0[1]
+variable   syy equal c_S0[2]
+variable   szz equal c_S0[3]
+
+variable   lz0 equal zhi-zlo
+variable   lz1 equal ${lz0}*(1+${delta})
+change_box  all z final 0 ${lz1}
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S3 all pressure NULL virial
+run        0
+variable   C33 equal -(c_S3[3]-${szz})/${delta}*${conv}
+variable   C13 equal -(c_S3[1]-${sxx})/${delta}*${conv}
+variable   C23 equal -(c_S3[2]-${syy})/${delta}*${conv}
+print "C33=${C33}  C13=${C13}  C23=${C23}" append elastic.out
+clear
+
+# ================================================================
+# Pass 4: eps_yz → 用 fix deform trate (替代 change_box yz)
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   syz equal c_S0[6]
+
+fix        shear all deform 1 yz trate ${d2} units box remap x
+run        1
+unfix      shear
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S4 all pressure NULL virial
+run        0
+variable   C44 equal -(c_S4[4]-${syz})/(2*${delta})*${conv}
+print "C44=${C44}" append elastic.out
+clear
+
+# ================================================================
+# Pass 5: eps_xz → fix deform
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   sxz equal c_S0[5]
+
+fix        shear all deform 1 xz trate ${d2} units box remap x
+run        1
+unfix      shear
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S5 all pressure NULL virial
+run        0
+variable   C55 equal -(c_S5[5]-${sxz})/(2*${delta})*${conv}
+print "C55=${C55}" append elastic.out
+clear
+
+# ================================================================
+# Pass 6: eps_xy → fix deform
+# ================================================================
+units         metal
+boundary      p p p
+atom_style    atomic
+read_data     lammps.data
+pair_style    eam/alloy
+pair_coeff    * * CuZn_eam.alloy Cu
+min_style     cg
+minimize      1.0e-10 1.0e-12 100000 1000000
+
+compute    S0 all pressure NULL virial
+run        0
+variable   sxy equal c_S0[4]
+
+fix        shear all deform 1 xy trate ${d2} units box remap x
+run        1
+unfix      shear
+minimize    1.0e-10 1.0e-12 1000 100000
+compute    S6 all pressure NULL virial
+run        0
+variable   C66 equal -(c_S6[4]-${sxy})/(2*${delta})*${conv}
+print "C66=${C66}" append elastic.out
+clear
+
+# ================================================================
+# 对称化 & 输出
+# ================================================================
+print " "                                                       append elastic.out
+print "=== 6x6 MATRIX (Voigt, GPa) ==="                          append elastic.out
+print "C11   C12   C13    0     0     0  "                       append elastic.out
+print "C12   C22   C23    0     0     0  "                       append elastic.out
+print "C13   C23   C33    0     0     0  "                       append elastic.out
+print " 0     0     0    C44    0     0  "                       append elastic.out
+print " 0     0     0     0    C55    0  "                       append elastic.out
+print " 0     0     0     0     0    C66 "                       append elastic.out
+print "=== C12,C13,C23 需取 Pass1-3 的对称平均值 ==="              append elastic.out

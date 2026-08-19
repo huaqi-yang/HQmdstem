@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --job-name=CuZn-scf
+#SBATCH --partition=4V100
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --gpus-per-node=1
+#SBATCH --qos=flood-1o2gpu
+#SBATCH --array=1-N%50
+
+module load abacus/LTSv3.10.1-sm70-auto
+WORK_DIR="$PWD/iter00_${SLURM_ARRAY_TASK_ID}"
+cd "$WORK_DIR"
+
+abacus > scf.output 2>&1
