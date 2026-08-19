@@ -23,8 +23,6 @@ from hq_common import fail, hq_home, read_extxyz_frames
 
 USAGE = __doc__
 EX_DIR = os.path.join(hq_home(), "examples", "abacus")
-PP_DIR = os.path.join(EX_DIR, "apns-pseudopotentials-v1")
-ORB_DIR = os.path.join(EX_DIR, "apns-orbitals-precision-v1")
 
 ABACUS_INPUT = """INPUT_PARAMETERS
 pseudo_dir      {pseudo}
@@ -65,7 +63,7 @@ cd "$WORK_DIR"
 
 abacus > scf.output 2>&1
 """
-def _stru_header(species):
+def _stru_header(species, pp_dir, orb_dir):
     """Header used by the battle-tested SAI prepare_all2-8.sh (ABACUS STRU)."""
     cnt = {}
     for s in species:
@@ -73,26 +71,26 @@ def _stru_header(species):
     masses = {"Cu": 63.546, "Zn": 65.38}
     lines = ["ATOMIC_SPECIES"]
     for el in sorted(cnt):
-        pp_cands = sorted(glob.glob(os.path.join(PP_DIR, el + "_*.upf")) +
-                          glob.glob(os.path.join(PP_DIR, el + "*.UPF")) +
-                          glob.glob(os.path.join(PP_DIR, el + ".upf")))
+        pp_cands = sorted(glob.glob(os.path.join(pp_dir, el + "_*.upf")) +
+                          glob.glob(os.path.join(pp_dir, el + "*.UPF")) +
+                          glob.glob(os.path.join(pp_dir, el + ".upf")))
         pp = os.path.basename(pp_cands[0]) if pp_cands else f"{el}.upf"
         lines.append(f"{el} {masses.get(el, 1.0)} {pp}")
     lines.append("NUMERICAL_ORBITAL")
     for el in sorted(cnt):
-        orb_cands = sorted(glob.glob(os.path.join(ORB_DIR, el + "_*.orb")))
+        orb_cands = sorted(glob.glob(os.path.join(orb_dir, el + "_*.orb")))
         orb = os.path.basename(orb_cands[0]) if orb_cands else f"{el}.orb"
         lines.append(orb)
     return "\n".join(lines) + "\n"
 
 
-def write_stru(path, lat, species, pos):
+def write_stru(path, lat, species, pos, pp_dir, orb_dir):
     """Write STRU in the same format as abacustest/prepare_all2-8.sh output."""
     cnt = {}
     for s in species:
         cnt[s] = cnt.get(s, 0) + 1
     with open(path, "w", encoding="utf-8") as f:
-        f.write(_stru_header(species))
+        f.write(_stru_header(species, pp_dir, orb_dir))
         f.write("LATTICE_CONSTANT\n1.889726\n")
         f.write("LATTICE_VECTORS\n")
         for row in lat:
@@ -225,8 +223,8 @@ def cmd_pretreat(args):
     prefix, out = "iter00", "."
     func = None
     data_name = None
-    pp_dir = os.path.abspath(PP_DIR)
-    orb_dir = os.path.abspath(ORB_DIR)
+    pp_dir = None
+    orb_dir = None
     i = 1
     while i < len(args):
         a = args[i]
@@ -237,8 +235,15 @@ def cmd_pretreat(args):
         elif a == "--func" and i+1 < len(args): func = args[i+1].upper(); i += 2
         elif a == "--data-name" and i+1 < len(args): data_name = args[i+1]; i += 2
         else: fail(f"unknown option {a}\n\n{USAGE}")
-    print(f"[ABACUS] bundled pseudo_dir : {os.path.abspath(PP_DIR)}")
-    print(f"[ABACUS] bundled orbital_dir: {os.path.abspath(ORB_DIR)}")
+    if not pp_dir or not orb_dir:
+        fail("ABACUS pseudopotentials / orbitals are not bundled with this repo.\n"
+             "Download them from the official ABACUS repository and pass:\n"
+             "  --pp DIR    pseudopotential dir (e.g. apns-pseudopotentials-v1)\n"
+             "  --orb DIR   orbital dir (e.g. apns-orbitals-precision-v1)\n\n" + USAGE)
+    pp_dir = os.path.abspath(pp_dir)
+    orb_dir = os.path.abspath(orb_dir)
+    print(f"[ABACUS] pseudo_dir : {pp_dir}")
+    print(f"[ABACUS] orbital_dir: {orb_dir}")
     if func is None:
         func = ask_path("ABACUS functional (LDA/PBE/PBE-D3)", "PBE-D3").upper()
     if func not in ("LDA", "PBE", "PBE-D3"):
@@ -259,32 +264,8 @@ def cmd_pretreat(args):
         lat, species, pos = read_poscar(f)
         frames.append((os.path.basename(f), lat, species, pos))
         species_all.update(species)
-    os.makedirs(out, exist_ok=True)
-    use_custom = pp_dir != os.path.abspath(PP_DIR) or orb_dir != os.path.abspath(ORB_DIR)
-    if use_custom:
-        pp_out = os.path.abspath(pp_dir)
-        orb_out = os.path.abspath(orb_dir)
-        print("[ABACUS] using custom pseudo/orbital dirs (no file copy)")
-    else:
-        data_name = data_name or ask_path("DFT data folder name under $HOME", "CuZn")
-        data_dir = os.path.join(os.path.expanduser("~"), data_name.strip() or "CuZn")
-        os.makedirs(data_dir, exist_ok=True)
-        n = 0
-        for el in sorted(species_all):
-            pp_cands = sorted(glob.glob(os.path.join(PP_DIR, el + "_*.upf")) +
-                              glob.glob(os.path.join(PP_DIR, el + "*.UPF")) +
-                              glob.glob(os.path.join(PP_DIR, el + ".upf")))
-            orb_cands = sorted(glob.glob(os.path.join(ORB_DIR, el + "_*.orb")))
-            if pp_cands:
-                shutil.copyfile(pp_cands[0], os.path.join(data_dir, os.path.basename(pp_cands[0])))
-                n += 1
-            if orb_cands:
-                shutil.copyfile(orb_cands[0], os.path.join(data_dir, os.path.basename(orb_cands[0])))
-                n += 1
-        pp_out = data_dir
-        orb_out = data_dir
-        print(f"[ABACUS] data folder: {data_dir}")
-        print(f"[ABACUS] copied {n} element files ({','.join(sorted(species_all))}) into {data_dir}")
+    pp_out = pp_dir
+    orb_out = orb_dir
     has_abacustest = shutil.which("abacustest") is not None
     for idx0, (name, lat, species, pos) in enumerate(frames, start=1):
         m = re.search(r"POSCAR_?(\d+)", name)
@@ -305,13 +286,13 @@ def cmd_pretreat(args):
                     lines = open(stru_path, encoding="utf-8-sig", errors="replace").read().splitlines()
                     idx_lat = next((i for i, l in enumerate(lines) if l.strip().startswith("LATTICE_CONSTANT")), len(lines))
                     with open(stru_path, "w", encoding="utf-8") as fh:
-                        fh.write(_stru_header(species))
+                        fh.write(_stru_header(species, pp_dir, orb_dir))
                         fh.write("\n".join(lines[idx_lat:]) + "\n")
                     stru_done = True
         if not stru_done:
             if not os.path.isdir(d):
                 os.makedirs(d, exist_ok=True)
-            write_stru(os.path.join(d, "STRU"), lat, species, pos)
+            write_stru(os.path.join(d, "STRU"), lat, species, pos, pp_dir, orb_dir)
         si = os.path.join(d, "struinfo.txt")
         if not os.path.isfile(si):
             with open(si, "w", encoding="utf-8") as fh:
