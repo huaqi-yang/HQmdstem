@@ -24,15 +24,20 @@ if [ -n "${PYTHON:-}" ] && ! [ -x "${PYTHON}" ] && ! command -v "${PYTHON}" >/de
 fi
 
 banner() {
-cat <<'EOF'
-H   H   QQQ   M   M  DDDD    SSS   TTTTT  EEEEE  M   M  K   K  IIIII  TTTTT
-H   H  Q   Q  MM MM  D   D  S        T    E      MM MM  K  K     I      T
-HHHHH  Q   Q  M M M  D   D   SSS     T    EEE    M M M  KKK      I      T
-H   H  Q  QQ  M   M  D   D      S    T    E      M   M  K  K     I      T
-H   H   QQQQ  M   M  DDDD   SSSS     T    EEEEE  M   M  K   K  IIIII    T
+  local BLU=$'\e[1;38;2;79;120;255m' RST=$'\e[0m'
+  printf '%s' "$BLU"
+  cat <<'EOF'
+
+ _    _  ____                _     _                 _    _ _
+| |  | |/ __ \              | |   | |               | |  (_) |
+| |__| | |  | |_ __ ___   __| |___| |_ ___ _ __ ___ | | ___| |_
+|  __  | |  | | '_ ` _ \ / _` / __| __/ _ \ '_ ` _ \| |/ / | __|
+| |  | | |__| | | | | | | (_| \__ \ ||  __/ | | | | |   <| | |_
+|_|  |_|\___\_\_| |_| |_|\__,_|___/\__\___|_| |_| |_|_|\_\_|\__|
 
      HQmdstemkit (Cu-Zn GPUMD / NEP / QSTEM / CP2K / ABACUS)
 EOF
+  printf '%s' "$RST"
 }
 
 ask()    { printf "%s: " "$1"; read -r "$2"; }
